@@ -27,4 +27,4 @@ main = do
   print $ matMul m1 m2
 
   putStrLn "\nAttempting invalid multiplication (uncomment to see error):"
-  print $ matMul m1 m1  -- This should cause a type error
+  --print $ matMul m1 m1  -- This should cause a type error
