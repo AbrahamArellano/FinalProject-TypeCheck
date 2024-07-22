@@ -15,11 +15,13 @@ import Data.Kind (Type)
 import System.Random (randomRIO)
 import Control.Monad (replicateM)
 
+-- Tensor data type with type-level axes
 data Tensor (d :: Type) (axes :: [Symbol]) where
   Scalar :: d -> Tensor d '[]
   Vector :: [d] -> Tensor d '[a]
   Matrix :: [[d]] -> Tensor d '[a, b]
 
+-- Show instances for better readability
 instance Show d => Show (Tensor d '[]) where
   show (Scalar x) = show x
 
@@ -29,16 +31,19 @@ instance Show d => Show (Tensor d '[a]) where
 instance Show d => Show (Tensor d '[a, b]) where
   show (Matrix xss) = unlines $ map show xss
 
+-- Type aliases for common tensor types
 type Scalar = Tensor Float '[]
 type Vector a = Tensor Float '[a]
 type Matrix a b = Tensor Float '[a, b]
 
+-- Matrix multiplication typeclass
 class MatMul a b where
   matMul :: Matrix a b -> Vector a -> Vector b
 
 instance MatMul a b where
   matMul (Matrix m) (Vector v) = Vector $ map (sum . zipWith (*) v) m
 
+-- Helper functions for tensor creation
 scalar :: Float -> Scalar
 scalar = Scalar
 
@@ -48,6 +53,7 @@ vector = Vector
 matrix :: [[Float]] -> Matrix a b
 matrix = Matrix
 
+-- Element-wise operations
 class ElementWise (axes :: [Symbol]) where
   elementWise :: (Float -> Float) -> Tensor Float axes -> Tensor Float axes
 
@@ -60,18 +66,14 @@ instance ElementWise '[a] where
 instance ElementWise '[a, b] where
   elementWise f (Matrix xss) = Matrix (map (map f) xss)
 
+-- Activation functions
 relu :: ElementWise axes => Tensor Float axes -> Tensor Float axes
 relu = elementWise (\x -> max 0 x)
 
 sigmoid :: ElementWise axes => Tensor Float axes -> Tensor Float axes
 sigmoid = elementWise (\x -> 1 / (1 + exp (-x)))
 
-initializeWeights :: Int -> Int -> IO (Matrix a b)
-initializeWeights rows cols = Matrix <$> replicateM rows (replicateM cols (randomRIO (-1, 1)))
-
-initializeBiases :: Int -> IO (Vector a)
-initializeBiases size = Vector <$> replicateM size (randomRIO (-1, 1))
-
+-- Neural network components
 data DenseLayer input output = DenseLayer
   { weights :: Matrix input output
   , biases  :: Vector output
@@ -97,6 +99,13 @@ forwardNN (FeedForwardNN l1 l2) input =
   let hidden = relu $ forwardDense l1 input
       output = sigmoid $ forwardDense l2 hidden
   in output
+
+-- Initialization functions for neural network components
+initializeWeights :: Int -> Int -> IO (Matrix a b)
+initializeWeights rows cols = Matrix <$> replicateM rows (replicateM cols (randomRIO (-1, 1)))
+
+initializeBiases :: Int -> IO (Vector a)
+initializeBiases size = Vector <$> replicateM size (randomRIO (-1, 1))
 
 initializeNN :: Int -> Int -> Int -> IO (FeedForwardNN a b c)
 initializeNN inputSize hiddenSize outputSize = do
