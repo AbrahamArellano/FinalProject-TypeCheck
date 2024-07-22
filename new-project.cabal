@@ -2,21 +2,17 @@ cabal-version:      2.4
 name:               new-project
 version:            0.1.0.0
 synopsis:           Typesafe tensor operations in Haskell
--- description:
--- bug-reports:
 license:            MIT
-author:             Your Name
-maintainer:         your.email@example.com
--- copyright:
--- category:
-extra-source-files: CHANGELOG.md
+author:             Abraham Arellano
+maintainer:         aa107@illinois.edu
 
 executable Haskell
     main-is:          Main.hs
     other-modules:    Tensor
-    -- other-extensions:
+                      Tests
     build-depends:    base ^>=4.17.2.0,
-                      random ^>=1.2.1.1
+                      random ^>=1.2.1.1,
+                      HUnit ^>=1.6.2.0
     hs-source-dirs:   app
     default-language: Haskell2010
     ghc-options:      -Wall

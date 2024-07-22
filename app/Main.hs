@@ -3,44 +3,30 @@
 module Main where
 
 import Tensor
-import Control.Monad (replicateM)
+import Tests
+import Control.Monad (forM_)
 
 main :: IO ()
 main = do
-  let m1 = matrix [[1, 2], [3, 4]] :: Matrix "A" "B"
-      m2 = matrix [[5, 6], [7, 8]] :: Matrix "B" "C"
-      v = vector [1, 2] :: Vector "A"
-      s = scalar 3.14
+    putStrLn "Running tests..."
+    _ <- runTests
+    putStrLn "\nNeural Network Demonstration:"
+    nn <- initializeNN 2 3 1
+    let inputs = [vector [0.5, 0.8], vector [0.2, 0.9], vector [0.1, 0.3]] :: [Vector "Input"]
+    
+    putStrLn "Processing inputs through the neural network:"
+    forM_ (zip [(1::Int)..] inputs) $ \(i, input) -> do
+        let output = forwardNN nn input
+        putStrLn $ "Input " ++ show i ++ ":"
+        print (input :: Vector "Input")
+        putStrLn $ "Output " ++ show i ++ ":"
+        print (output :: Vector "Output")
+        putStrLn ""
 
-  putStrLn "Scalar:"
-  print s
+    putStrLn "Note: The neural network weights are randomly initialized, so outputs will vary."
 
-  putStrLn "\nVector:"
-  print v
-
-  putStrLn "\nMatrix m1:"
-  print m1
-
-  putStrLn "\nMatrix m2:"
-  print m2
-
-  putStrLn "\nMatrix multiplication (m1 * m2):"
-  print $ matMul m1 m2
-
-  putStrLn "\nType safety test - valid multiplication:"
-  let validMul = matMul (matrix [[1, 2]] :: Matrix "X" "Y") 
-                        (matrix [[3], [4]] :: Matrix "Y" "Z")
-  print validMul
-
-  putStrLn "\nType safety test - invalid multiplication (uncomment to see error):"
-  -- Uncommenting the next line should result in a compile-time error
-  -- let invalidMul = matMul (matrix [[1, 2]] :: Matrix "X" "Y") (matrix [[3, 4]] :: Matrix "Z" "W")
-
-  putStrLn "\nNeural Network Demonstration:"
-  nn <- initializeNN 2 3 1
-  let input = vector [0.5, 0.8] :: Vector "Input"
-  let output = forwardNN nn input
-  putStrLn "Input:"
-  print input
-  putStrLn "Output:"
-  print output
+    -- Type safety demonstration (these should not compile if uncommented)
+    -- let invalidMul = matMul (matrix [[1, 2]] :: Matrix "X" "Y") (vector [3, 4] :: Vector "Z")
+    -- let invalidNN = initializeNN 2 3 1 :: IO (FeedForwardNN "Input" "Hidden" "Output")
+    -- let invalidInput = vector [1.0, 2.0, 3.0] :: Vector "InvalidInput"
+    -- let invalidOutput = forwardNN nn invalidInput
